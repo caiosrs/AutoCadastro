@@ -1,0 +1,720 @@
+#IMPORTANDO BIBLIOTECAS
+
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.alert import Alert
+from selenium.common.exceptions import NoAlertPresentException
+
+import openpyxl
+import re
+import pyautogui
+import pandas as pd
+from datetime import datetime
+import time
+
+#Acessando o sistema
+
+options = Options()
+options.add_argument("--start-maximized")
+
+# Initialize the Chrome driver
+driver = webdriver.Chrome(options=options)
+
+driver.get("https://dpcontrole.informatecservicos.com.br/Acesso/Acesso.aspx")
+
+url_desejada = "https://www.paypower.com.br/folha/sistema/principal/principal.asp"
+
+encontrou_url_desejada = False
+
+while not encontrou_url_desejada:
+    # Obtém todas as URLs das páginas abertas
+    urls_abertas = driver.window_handles
+    
+    ultima_janela = urls_abertas[-1]
+    
+    driver.switch_to.window(ultima_janela)
+        
+    url_atual = driver.current_url
+        
+    if url_atual == url_desejada:
+        encontrou_url_desejada = True
+    
+    if not encontrou_url_desejada:
+        time.sleep(1)
+
+#CARREGA PLANILHA COM OS DADOS
+
+def carregar_dados_planilha(planilha_path):
+    return pd.read_excel(planilha_path)
+
+#ACESSANDO A PÁGINA DE ADMISSÃO
+
+def acessar_ultima_guia_aberta():
+    janelas = driver.window_handles
+    if len(janelas) > 1:
+        ultima_guia = janelas[-1]
+        driver.switch_to.window(ultima_guia)
+        driver.get('https://www.paypower.com.br/folha/sistema/pessoal/admissao/consultar.asp')
+
+#VERIFICANDO CPF
+
+def verificando_cpf():
+    acessar_ultima_guia_aberta()
+
+    df = carregar_dados_planilha(r"DadosAdmissao.xlsx")
+
+    campo_cpf = driver.find_element(By.ID, 'CPF')
+
+    cpf = ['CPF']
+    campo_cpf.send_keys(cpf)
+    
+    btn_localizar = driver.find_element(By.ID, 'btnlocalizar')
+    btn_localizar.click()
+
+    time.sleep(2)
+
+    btn_avancar = driver.find_element(By.ID, 'avancar')
+    btn_avancar.click()
+
+    time.sleep(1)
+
+# CADASTRANDO ITENS
+
+def cadastrar_item():
+
+    df = carregar_dados_planilha(r"DadosAdmissao.xlsx")
+    df['Status'] = "Iniciado"
+
+    for index, row in df.iterrows():
+    #for index, row in df.head(20).iterrows():
+
+        try:
+            acessar_ultima_guia_aberta()
+
+            campo_cpf = driver.find_element(By.ID, 'CPF')
+
+            cpf = str(row['CPF'])
+            campo_cpf.send_keys(cpf)
+            
+            btn_localizar = driver.find_element(By.ID, 'btnlocalizar')
+            btn_localizar.click()
+
+            time.sleep(2)
+
+            btn_avancar = driver.find_element(By.ID, 'avancar')
+            btn_avancar.click()
+
+            time.sleep(1)
+
+            campo_nome = driver.find_element(By.ID, 'NOME')
+            campo_dt_nascimento = driver.find_element(By.ID, 'DATNASCIMENTO2')
+            campo_naturalidade = driver.find_element(By.ID, 'MUNICIPIONAT')
+            campo_nome_mae = driver.find_element(By.ID, 'MAE')
+            campo_nacionalidade_mae = driver.find_element(By.ID, 'CODNACIONALMAE')
+            campo_nome_pai = driver.find_element(By.ID, 'PAI')
+            campo_nacionalidade_pai = driver.find_element(By.ID, 'CODNACIONALPAI')
+            campo_grau_instrucao = driver.find_element(By.ID, 'CODGRAU')
+            campo_estado_civil = driver.find_element(By.ID, 'CODESTADOCIVIL')
+            campo_sexo_m = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/fieldset[1]/table/tbody/tr[14]/td[2]/input[1]')
+            campo_sexo_f = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/fieldset[1]/table/tbody/tr[14]/td[2]/input[2]')
+            campo_raca = driver.find_element(By.ID, 'CODRACA')
+            campo_deficiencia_sim = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/fieldset[1]/table/tbody/tr[16]/td[4]/input[1]')
+            campo_deficiencia_nao = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/fieldset[1]/table/tbody/tr[16]/td[4]/input[2]')
+            campo_deficiencia_motora = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/fieldset[1]/table/tbody/tr[17]/td[4]/input[1]')
+            campo_deficiencia_visual = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/fieldset[1]/table/tbody/tr[17]/td[4]/input[2]')
+            campo_deficiencia_auditiva = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/fieldset[1]/table/tbody/tr[17]/td[4]/input[3]')
+            campo_deficiencia_mental = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/fieldset[1]/table/tbody/tr[17]/td[4]/input[4]')
+            campo_deficiencia_intelectual = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/fieldset[1]/table/tbody/tr[17]/td[4]/input[5]')
+            campo_deficiencia_reabilitado = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/fieldset[1]/table/tbody/tr[18]/td[4]/input')
+
+            campo_rg = driver.find_element(By.ID, 'RG')
+            campo_org_emissor = driver.find_element(By.ID, 'ORGAOEMISSOR')
+            campo_expidacao_rg = driver.find_element(By.ID, 'DATEXPEDICAORG')
+            campo_uf_rg = driver.find_element(By.ID, 'CODUFORGAOEMISSOR')
+
+            campo_cep = driver.find_element(By.ID, 'CEP')
+            campo_municipio = driver.find_element(By.ID, 'MUNICIPIO')
+            campo_bairro = driver.find_element(By.ID, 'BAIRRO')
+            campo_tipo_logradouro = driver.find_element(By.ID, 'CODTIPOLOGRADOURO')
+            campo_endereco = driver.find_element(By.ID, 'ENDERECO2')
+            campo_complemento = driver.find_element(By.ID, 'COMPLEND')
+            campo_numero = driver.find_element(By.ID, 'NUMEND')
+            campo_email = driver.find_element(By.ID, 'EMAIL')
+
+            nome = str(row['Nome'])
+            nome = nome.strip()
+            campo_nome.send_keys(nome)
+
+            dt_nascimento = row['Data de Nascimento']
+            campo_dt_nascimento.send_keys(dt_nascimento)
+
+            naturalidade = str(row['Naturalidade'])
+            naturalidade = naturalidade.strip()
+            campo_naturalidade.send_keys(naturalidade)
+            time.sleep(1)
+            pyautogui.press("DOWN")
+            time.sleep(1)
+            pyautogui.press("ENTER")
+            
+            nome_mae = str(row['Nome da Mãe'])
+            nome_mae = nome_mae.strip()
+            campo_nome_mae.send_keys(nome_mae)
+
+            if campo_nacionalidade_mae.is_displayed():
+                # Obtém o valor visível do dropdownlist na planilha
+                nacionalidade_mae = row['Nacionalidade da Mãe']
+                
+                # Seleciona a opção correspondente no dropdownlistc
+                Select(campo_nacionalidade_mae).select_by_visible_text(nacionalidade_mae)
+
+            nome_pai = str(row['Nome do Pai'])
+            nome_pai = nome_pai.strip()
+            if not nome_pai or nome_pai == "nan":
+                    pass
+            elif nome_pai:
+                campo_nome_pai.send_keys(nome_pai)
+
+            if campo_nacionalidade_pai.is_displayed():
+                nacionalidade_pai = row['Nacionalidade do Pai']
+                if not nacionalidade_pai or nacionalidade_pai == "nan":
+                    pass
+                else:
+                    Select(campo_nacionalidade_pai).select_by_visible_text(nacionalidade_pai)
+
+            if campo_grau_instrucao.is_displayed():
+                grau_instrucao = row['Grau de Instrução']        
+                Select(campo_grau_instrucao).select_by_visible_text(grau_instrucao)
+
+            if campo_estado_civil.is_displayed():
+                estado_civil = row['Estado Civil']       
+                Select(campo_estado_civil).select_by_visible_text(estado_civil)
+            
+            sexo = row['Sexo'].lower()
+            if sexo in ['masculino', 'm']:
+                campo_sexo_m.click()
+            elif sexo in ['feminino', 'f']:
+                campo_sexo_f.click()
+            else:
+                None
+
+            if campo_raca.is_displayed():
+                raca = row['Raça']      
+                Select(campo_raca).select_by_visible_text(raca)
+
+            deficiencia = row['Deficiência'].lower()
+            if deficiencia in ['sim', 's', 'x']:
+                campo_deficiencia_sim.click()
+                time.sleep(1)
+
+                deficiencia_motora = row['Deficiência Motora'].lower()
+                if deficiencia_motora in ['sim', 's', 'x']:
+                    campo_deficiencia_motora.click()
+
+                deficiencia_visual = row['Deficiência Visual'].lower()
+                if deficiencia_visual in ['sim', 's', 'x']:
+                    campo_deficiencia_visual.click()
+
+                deficiencia_auditiva = row['Deficiência Auditiva'].lower()
+                if deficiencia_auditiva in ['sim', 's', 'x']:
+                    campo_deficiencia_auditiva.click()
+
+                deficiencia_mental = row['Deficiência Mental'].lower()
+                if deficiencia_mental in ['sim', 's', 'x']:
+                    campo_deficiencia_mental.click()
+
+                deficiencia_intelectual = row['Deficiência Intelectual'].lower()
+                if deficiencia_intelectual in ['sim', 's', 'x']:
+                    campo_deficiencia_intelectual.click()
+
+                deficiencia_reabilitado = row['Deficiência Reabilitado'].lower()
+                if deficiencia_reabilitado in ['sim', 's', 'x']:
+                    campo_deficiencia_reabilitado.click()
+
+            else:
+                campo_deficiencia_nao.click()
+
+            janela_doc_pessoais = driver.find_element(By.XPATH, '//*[@id="Bs_TabSet_0_tabCap_1"]')
+            janela_doc_pessoais.click()
+            time.sleep(1)
+
+            rg = str(row['RG'])
+            rg = rg.strip()
+            if not rg or rg == "nan":
+                pass
+            else:
+                campo_rg.send_keys(rg)
+
+            org_emissor_rg = str(row['Org. Emissor RG'])
+            org_emissor_rg = org_emissor_rg.strip()
+            org_emissor_rg = re.sub(r'[^a-zA-Z0-9]', '', org_emissor_rg)
+            if not org_emissor_rg or org_emissor_rg == "nan":
+                pass
+            else:
+                campo_org_emissor.send_keys(org_emissor_rg)
+
+            dt_expedicao_rg = str(row['Expedição RG'])
+            dt_expedicao_rg = dt_expedicao_rg.strip()
+            if not dt_expedicao_rg or dt_expedicao_rg == "nan":
+                pass
+            else:
+                campo_expidacao_rg.send_keys(dt_expedicao_rg)
+
+            uf_rg = str(row['UF RG'])
+            uf_rg = uf_rg.strip()
+            if not uf_rg or uf_rg == "nan":
+                pass
+            else:
+                campo_uf_rg.send_keys(uf_rg) 
+
+            campo_ctps_num = driver.find_element(By.ID,'NUMCTPS')
+            campo_ctps_num.clear()
+            ctps_num = str(row['CTPS Número'])
+            ctps_num = ctps_num.strip()
+            ctps_num = re.sub(r'[^a-zA-Z0-9]', '', ctps_num)
+            if not ctps_num or ctps_num == "nan":
+                pass
+            else:
+                campo_ctps_num.send_keys(ctps_num) 
+            
+            campo_ctps_serie = driver.find_element(By.ID,'SERIECTPS')
+            campo_ctps_serie.clear()
+            ctps_serie = str(row['CTPS Série'])
+            ctps_serie = ctps_serie.strip()
+            ctps_serie = re.sub(r'[^a-zA-Z0-9]', '', ctps_serie)
+            if not ctps_serie or ctps_serie == "nan":
+                pass
+            else:
+                campo_ctps_serie.send_keys(ctps_serie)
+
+            campo_dt_expedicao_ctps = driver.find_element(By.ID,'DATEXPEDICAOCTPS')
+            campo_dt_expedicao_ctps.clear
+            dt_expedicao_ctps = str(row['Data Expedição CTPS'])
+            dt_expedicao_ctps = dt_expedicao_ctps.strip()
+            dt_expedicao_ctps = re.sub(r'[^a-zA-Z0-9]', '', dt_expedicao_ctps)
+            if not dt_expedicao_ctps or dt_expedicao_ctps == "nan":
+                pass
+            else:
+                campo_dt_expedicao_ctps.send_keys(dt_expedicao_ctps)
+
+            campo_uf_ctps = driver.find_element(By.ID, 'CODUFCTPS')
+            campo_uf_ctps.clear()
+            uf_ctps = str(row['UF CTPS'])
+            uf_ctps = uf_ctps.strip()
+            uf_ctps = re.sub(r'[^a-zA-Z0-9]', '', uf_ctps)
+            if not uf_ctps or uf_ctps == "nan":
+                pass
+            else:
+                campo_uf_ctps.send_keys(uf_ctps)
+
+            janela_endereco = driver.find_element(By.XPATH, '//*[@id="Bs_TabSet_0_tabCap_2"]')
+            janela_endereco.click()
+            time.sleep(1)
+
+            cep = str(row['CEP'])
+            cep = cep.strip()
+            cep = re.sub(r'[^a-zA-Z0-9]', '', cep)
+            if not cep or cep == "nan":
+                pass
+            else:
+                campo_cep.send_keys(cep) 
+                pyautogui.press("TAB")  
+                time.sleep(1)
+
+            try:
+                alert = Alert(driver)#WebDriverWait(driver, 10).until(EC.alert_is_present())
+                alert.accept()
+                
+                campo_cep.clear()
+
+                municipio = str(row['Município'])
+                municipio = municipio.strip()
+                campo_municipio.send_keys(municipio)
+                time.sleep(1)
+                pyautogui.press("DOWN")
+                time.sleep(1)
+                pyautogui.press("ENTER")
+
+                bairro = str(row['Bairro'])
+                bairro = bairro.strip()
+                campo_bairro.send_keys(bairro)
+
+                mapeamento_logradouro = {
+                    'aeroporto': 'Aeroporto',
+                    'alameda': 'Alameda',
+                    'área': 'Área',
+                    'avenida': 'Avenida',
+                    'campo': 'Campo',
+                    'chácara': 'Chácara',
+                    'colônia': 'Colônia',
+                    'condomínio': 'Condomínio',
+                    'conjunto': 'Conjunto',
+                    'distrito': 'Distrito',
+                    'esplanada': 'Esplanada',
+                    'estação': 'Estação',
+                    'estrada': 'Estrada',
+                    'favela': 'Favela',
+                    'fazenda': 'Fazenda',
+                    'feira': 'Feira',
+                    'jardim': 'Jardim',
+                    'ladeira': 'Ladeira',
+                    'lago': 'Lago',
+                    'lagoa': 'Lagoa',
+                    'largo': 'Largo',
+                    'loteamento': 'Loteamento',
+                    'margem': 'Margem',
+                    'morro': 'Morro',
+                    'núcleo': 'Núcleo',
+                    'outros': 'Outros',
+                    'parque': 'Parque',
+                    'passagem': 'Passagem',
+                    'passarela': 'Passarela',
+                    'pátio': 'Pátio',
+                    'praça': 'Praça',
+                    'praia': 'Praia',
+                    'quadra': 'Quadra',
+                    'recanto': 'Recanto',
+                    'residencial': 'Residencial',
+                    'rodovia': 'Rodovia',
+                    'rua': 'Rua',
+                    'setor': 'Setor',
+                    'sítio': 'Sítio',
+                    'travessa': 'Travessa',
+                    'trecho': 'Trecho',
+                    'trevo': 'Trevo',
+                    'vale': 'Vale',
+                    'vereda': 'Vereda',
+                    'via': 'Via',
+                    'viaduto': 'Viaduto',
+                    'viela': 'Viela',
+                    'vila': 'Vila',
+                    'estrada municipal': 'Estrada Municipal',
+                    'servidão': 'Servidão'
+                }
+
+                logradouro = row['Tipo Logradouro'].lower()
+                if logradouro in mapeamento_logradouro:
+                    Select(campo_tipo_logradouro).select_by_visible_text(mapeamento_logradouro[logradouro])
+
+                endereco = str(row['Endereço'])
+                endereco = endereco.strip()
+                campo_endereco.send_keys(endereco)
+            except NoAlertPresentException:
+                pass
+
+            numero = str(row['Nº'])
+            if '.' in numero and len(numero) == 3:
+                numero += "00"
+            numero = re.sub(r'[^a-zA-Z0-9]', '', numero)
+            campo_numero.send_keys(numero)
+
+            complemento = str(row['Complemento'])
+            complemento = complemento.strip()
+            if not complemento or complemento == "nan":
+                pass
+            else:
+                campo_complemento.send_keys(complemento)
+
+            email = str(row['Email'])
+            email = email.strip()
+            if not email or email == "nan":
+                pass
+            else:
+                campo_email.send_keys(email)
+
+            btn_gravar = driver.find_element(By.ID, 'btnGravar')
+            btn_gravar.click()
+            time.sleep(1)
+
+            campo_dt_admissao = driver.find_element(By.ID, 'DATADMISSAO')
+            campo_tipo_admissao = driver.find_element(By.ID, 'CODADMISSAO')
+            campo_vinculo = driver.find_element(By.ID, 'CODVINCULO')
+            campo_num_registro = driver.find_element(By.ID, 'NUMREGISTRO')
+            campo_indicativo = driver.find_element(By.ID, 'INDADMISSAO')
+            campo_categoria_trabalhador = driver.find_element(By.ID, 'CODCATEGESOCIAL')
+
+            campo_cargo = driver.find_element(By.ID, 'CODCARGO')
+            campo_funcao = driver.find_element(By.ID, 'CODFUNCAO')
+            campo_categoria = driver.find_element(By.ID, 'CODCATEGORIA')
+            campo_sindicato = driver.find_element(By.ID, 'CODSINDICATO')
+            campo_turma = driver.find_element(By.ID, 'CODTURMA')
+            campo_centro_custo = driver.find_element(By.ID, 'CODCCUSTO')
+            campo_modo_ponto = driver.find_element(By.ID, 'MODOPONTO')
+            campo_ocorrencia_sefip = driver.find_element(By.ID, 'CODOCORRSEFIP')
+
+            campo_tipo_salario = driver.find_element(By.ID, 'CODTIPOSALARIO')
+            campo_numero_total_horas = driver.find_element(By.ID, 'NUMHORAS')
+            campo_salario = driver.find_element(By.ID, 'SALARIO')
+            campo_tipo_pgto = driver.find_element(By.ID, 'TIPPAGAMENTO')
+            campo_agencia = driver.find_element(By.ID, 'NUMAGENCIA')
+            campo_digito_agencia = driver.find_element(By.ID, 'DIGAGENCIA')
+            campo_num_conta = driver.find_element(By.ID, 'NUMCONTA')
+            campo_digito_conta = driver.find_element(By.ID, 'DIGCONTA')
+            campo_recebe_adian_quinzenal = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/fieldset[3]/table/tbody/tr[18]/td[2]/input[1]')
+            campo_nao_recebe_adian_quinzenal = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/fieldset[3]/table/tbody/tr[18]/td[2]/input[2]')
+
+            dt_admissao = str(row['Data da Admissão'])
+            campo_dt_admissao.send_keys(dt_admissao)
+
+            #1o Emprego com registro #Reemprego #Transferência Emprego com ônus #Transferência Emprego sem ônus #Reintegração
+            if campo_tipo_admissao.is_displayed():
+                tipo_admissao = row['Tipo de Admissão']        
+                Select(campo_tipo_admissao).select_by_visible_text(tipo_admissao)
+
+            #CLT #ESTAGIÁRIO #DIRETOR COM FGTS #DIRETOR SEM FGTS #APRENDIZ #CONTRIBUINTE INDIVIDUAL #REPRESENTANTE #TEMPORÁRIO
+            if campo_vinculo.is_displayed():
+                vinculo_empregaticio = row['Vínculo Empregatício']
+                Select(campo_vinculo).select_by_visible_text(vinculo_empregaticio)
+
+            num_registro = str(row['Registro'])
+            num_registro = num_registro.strip()
+            if not num_registro or num_registro == "nan":
+                    pass
+            else:
+                campo_num_registro.click()
+                campo_valor = campo_num_registro.get_attribute('value')
+
+                if campo_valor:
+                    pass
+                else:
+                    campo_num_registro.send_keys(num_registro)
+
+            #Normal #Normal com Seguro Desemprego #Decorrente de Ação Fiscal #Decorrente de Ação Judicial
+            if campo_indicativo.is_displayed():
+                indicativo_admissao = row['Indicativo de Admissão']
+                Select(campo_indicativo).select_by_visible_text(indicativo_admissao)
+
+            categoria_trabalhador = row['Categoria do Trabalhador']
+            campo_categoria_trabalhador.send_keys(categoria_trabalhador)
+
+            janela_cargo = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[1]/div/div[3]')
+            janela_cargo.click()
+            time.sleep(1)
+
+            cargo = str(row['Cargo'])
+            cargo = cargo.strip()
+            campo_cargo.send_keys(cargo)
+            time.sleep(1)
+
+            categoria = str(row['Categoria'])
+            categoria = categoria.strip()
+            campo_categoria.send_keys(categoria)
+            time.sleep(1)
+
+            funcao = str(row['Função'])
+            funcao = funcao.strip()
+            campo_funcao.send_keys(funcao)
+
+            sindicato = str(row['Sindicato'])
+            sindicato = sindicato.strip()
+            campo_sindicato.send_keys(sindicato)
+
+            turma = str(row['Turma'])
+            turma = turma.strip()
+            campo_turma.send_keys(turma)
+
+            centro_custo = str(row['Centro de Custo'])
+            centro_custo = centro_custo.strip()
+            campo_centro_custo.send_keys(centro_custo)
+
+            #Bate Ponto #Não Bate Ponto #Não Utiliza Efetividade
+            if campo_modo_ponto.is_displayed():
+                modo_ponto = row['Modo Ponto']
+                Select(campo_modo_ponto).select_by_visible_text(modo_ponto)
+
+            #Nunca esteve exposto a agente #Não exposição a agente nocivo #Exposição a agente nocivo (15) #Exposição a agente nocivo (20) #Exposição a agente nocivo (25) #Mais de um vínculo-Não Exposto #Mais de um vínculo empreg (15) #Mais de um vínculo empreg (20) #Mais de um vínculo empreg (25)
+            if campo_ocorrencia_sefip.is_displayed():
+                ocorrencia_sefip = row['Ocorrência SEFIP']
+                Select(campo_ocorrencia_sefip).select_by_visible_text(ocorrencia_sefip)
+
+            janela_salario = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[1]/div/div[4]')
+            janela_salario.click()
+            time.sleep(1)
+            
+            #Mensalista #Horista
+            if campo_tipo_salario.is_displayed():
+                tipo_salario = row['Tipo de Salário']
+                Select(campo_tipo_salario).select_by_visible_text(tipo_salario)
+
+            numero_total_horas = str(row['Número Total de Horas'])
+            campo_numero_total_horas.send_keys(numero_total_horas)
+            # numero_total_horas_sem_pontuacao = str(numero_total_horas).replace(',', '').replace('.', '')
+            # campo_numero_total_horas.send_keys(numero_total_horas_sem_pontuacao)
+
+            salario = str(row['Salário'])
+            campo_salario.send_keys(salario)
+            # salario_sem_pontuacao = str(salario).replace(',', '').replace('.', '')
+            # campo_salario.send_keys(salario_sem_pontuacao)
+
+            #Tesouraria #Pagamento em Conta Corrente #Pagamento em Conta Corrente - Doc #Pagamento em Cartão Salário #Pagamento em Conta Poupança
+            if campo_tipo_pgto.is_displayed():
+                tipo_pgto = row['Tipo de Pagamento']
+                Select(campo_tipo_pgto).select_by_visible_text(tipo_pgto)
+            
+            def remove_ponto_zero(value):
+                if value.endswith('.0'):
+                    return value[:-2]
+                return value
+
+            agencia = str(row['Agência'])
+            agencia = agencia.strip()
+            agencia = remove_ponto_zero(agencia)
+            agencia = re.sub(r'[^a-zA-Z0-9]', '', agencia)
+            if not agencia or agencia == "nan":
+                    pass
+            else:
+                campo_agencia.send_keys(agencia)
+
+            digito_agencia = str(row['Digito Agência'])
+            digito_agencia = digito_agencia.strip()
+            digito_agencia = remove_ponto_zero(digito_agencia)
+            digito_agencia = re.sub(r'[^a-zA-Z0-9]', '', digito_agencia)
+            if not digito_agencia or digito_agencia == "nan":
+                    pass
+            else:
+                campo_digito_agencia.send_keys(digito_agencia)
+
+            num_conta = str(row['Conta'])
+            num_conta = num_conta.strip()
+            num_conta = remove_ponto_zero(num_conta)
+            num_conta = re.sub(r'[^a-zA-Z0-9]', '', num_conta)
+            if not num_conta or num_conta == "nan":
+                    pass
+            else:
+                campo_num_conta.send_keys(num_conta)
+
+            digito_conta = str(row['Digito Conta'])
+            digito_conta = digito_conta.strip()
+            digito_conta = remove_ponto_zero(digito_conta)
+            digito_conta = re.sub(r'[^a-zA-Z0-9]', '', digito_conta)
+            if not digito_conta or digito_conta == "nan":
+                    pass
+            else:
+                campo_digito_conta.send_keys(digito_conta)
+
+            recebe_adian_quinzenal = row['Recebe Adiantamento Quinzenal']
+            if recebe_adian_quinzenal.lower() == 'sim':
+                campo_recebe_adian_quinzenal.click()
+            elif recebe_adian_quinzenal.lower() == 'não':
+                campo_nao_recebe_adian_quinzenal.click()
+
+            btn_gravar = driver.find_element(By.ID, 'btnGravar')
+            btn_gravar.click()
+            time.sleep(3)
+
+            dependentes = row['Dependentes'].lower()
+            if dependentes in ['sim', 's', 'x']:
+                alert = Alert(driver)
+                alert.accept()
+
+                campo_dependente_nome = driver.find_element(By.ID, 'NOME')
+                campo_dependente_cpf = driver.find_element(By.ID, 'CPF')
+                campo_dependente_estado_civil = driver.find_element(By.ID, 'CODESTADOCIVIL')
+                campo_dependente_parentesco = driver.find_element(By.ID, 'PARENTESCO')
+                campo_dependente_tipo_dependente = driver.find_element(By.ID, 'CODTIPDEP')
+                campo_dependente_sexo_m = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/fieldset[1]/table/tbody/tr[20]/td[2]/input[1]')
+                campo_dependente_sexo_f = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/fieldset[1]/table/tbody/tr[20]/td[2]/input[2]')
+                campo_dependente_dt_nascimento = driver.find_element(By.ID, 'DATNASCIMENTO')
+                campo_dependente_ir = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/fieldset[3]/table/tbody/tr[2]/td[2]/input[1]')
+                campo_dependente_pensao = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/fieldset[3]/table/tbody/tr[4]/td[2]/input[1]')
+
+                num_dependentes = 5
+                preenchidos_com_sucesso = True
+
+                for i in range(1, num_dependentes + 1):
+
+                    dependente_nome = str(row[f'Dependente{i} Nome']).strip()
+    
+                    if not dependente_nome or dependente_nome == "nan":
+                        break
+
+                    try:
+
+                        dependente_nome = str(row[f'Dependente{i} Nome'])
+                        dependente_nome = dependente_nome.strip()
+                        campo_dependente_nome.send_keys(dependente_nome)
+
+                        dependente_cpf = str(row[f'Dependente{i} CPF'])
+                        dependente_cpf = dependente_cpf.strip()
+                        dependente_cpf = re.sub(r'[^a-zA-Z0-9]', '', dependente_cpf)
+                        campo_dependente_cpf.send_keys(dependente_cpf)
+
+                        if campo_dependente_estado_civil.is_displayed():
+                            dependente_estado_civil = row[f'Dependente{i} Estado Civil']
+                            Select(campo_dependente_estado_civil).select_by_visible_text(dependente_estado_civil)
+
+                        if campo_dependente_parentesco.is_displayed():
+                            dependente_parentesco = row[f'Dependente{i} Parentesco']
+                            Select(campo_dependente_parentesco).select_by_visible_text(dependente_parentesco)
+
+                        dependente_tipo_dependente = str(row[f'Dependente{i} Tipo Dependente'])
+                        dependente_tipo_dependente = remove_ponto_zero(dependente_tipo_dependente)
+                        campo_dependente_tipo_dependente.send_keys(dependente_tipo_dependente)
+                            
+                        dependente_sexo = row[f'Dependente{i} Sexo'].lower()
+                        if dependente_sexo in ['masculino', 'm']:
+                            campo_dependente_sexo_m.click()
+                        elif dependente_sexo in ['feminino', 'f']:
+                            campo_dependente_sexo_f.click()
+                        else:
+                            None
+
+                        janela_registro_nascimento = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[1]/div/div[3]')
+                        janela_registro_nascimento.click()
+                        time.sleep(1)
+
+                        dependente_dt_nascimento = datetime.strptime(row[f'Dependente{i} Data de Nascimento'].strftime('%d/%m/%Y'), '%d/%m/%Y')
+                        dependente_dt_nascimento_str = dependente_dt_nascimento.strftime('%d%m%Y')
+                        campo_dependente_dt_nascimento.send_keys(dependente_dt_nascimento_str)
+
+                        janela_salario_familia = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[1]/div/div[4]')
+                        janela_salario_familia.click()
+                        time.sleep(1)
+
+                        dependente_ir = row[f'Dependente{i} IR'].lower()
+                        if dependente_ir in ['sim', 's', 'x']:
+                            campo_dependente_ir.click()
+
+                        dependente_pensao = row[f'Dependente{i} Pensão'].lower()
+                        if dependente_pensao in ['sim', 's', 'x']:
+                            campo_dependente_pensao.click()
+
+                        btn_gravar = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/div/input[2]')
+                        btn_gravar.click()
+                        time.sleep(1)
+
+                        if i < num_dependentes:
+                            add_dependente = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/fieldset/table[1]/tbody/tr/td[3]/a/img')
+                            add_dependente.click()
+                            time.sleep(1)
+
+                    except Exception as e:
+                        # Se ocorrer um erro durante o preenchimento de um dependente, marque como erro e continue com a próxima linha
+                        df.at[index, 'Status'] = f"Erro na linha: {index}, {str(e)}"
+                        preenchidos_com_sucesso = False
+                        break
+                
+                # Se os dependentes foram preenchidos com sucesso, marque o status como "Concluído"
+                if preenchidos_com_sucesso:
+                    df.at[index, 'Status'] = "Concluído"
+
+            else: #dependentes.lower() == 'não':
+
+                #clicar em CANCELAR no popup
+                WebDriverWait(driver, 10).until(EC.alert_is_present())
+                popup = driver.switch_to.alert
+                popup.dismiss()
+
+            df.at[index, 'Status'] = "Concluído"
+
+        except Exception as e:
+                df.at[index, 'Status'] = f"Erro na linha: {index}, {str(e)}"
+                continue
+
+        df.to_excel(r"DadosAdmissao.xlsx", index=False)
+
+cadastrar_item()
+driver.quit()
