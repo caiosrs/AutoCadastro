@@ -496,28 +496,40 @@ def cadastrar_item():
 
             cargo = str(row['Cargo'])
             cargo = cargo.strip()
+            if '.' in cargo:
+                cargo = remove_ponto_zero(cargo)
             campo_cargo.send_keys(cargo)
             time.sleep(1)
 
             categoria = str(row['Categoria'])
             categoria = categoria.strip()
+            if '.' in categoria:
+                categoria = remove_ponto_zero(categoria)
             campo_categoria.send_keys(categoria)
             time.sleep(1)
 
             funcao = str(row['Função'])
             funcao = funcao.strip()
+            if '.' in funcao:
+                funcao = remove_ponto_zero(funcao)
             campo_funcao.send_keys(funcao)
 
             sindicato = str(row['Sindicato'])
             sindicato = sindicato.strip()
+            if '.' in sindicato:
+                sindicato = remove_ponto_zero(sindicato)
             campo_sindicato.send_keys(sindicato)
 
             turma = str(row['Turma'])
             turma = turma.strip()
+            if '.' in turma:
+                turma = remove_ponto_zero(turma)
             campo_turma.send_keys(turma)
 
             centro_custo = str(row['Centro de Custo'])
             centro_custo = centro_custo.strip()
+            if '.' in centro_custo:
+                centro_custo = remove_ponto_zero(centro_custo)
             campo_centro_custo.send_keys(centro_custo)
 
             #Bate Ponto #Não Bate Ponto #Não Utiliza Efetividade
@@ -561,7 +573,8 @@ def cadastrar_item():
 
             agencia = str(row['Agência'])
             agencia = agencia.strip()
-            agencia = remove_ponto_zero(agencia)
+            if '.' in agencia:
+                agencia = remove_ponto_zero(agencia)
             agencia = re.sub(r'[^a-zA-Z0-9]', '', agencia)
             if not agencia or agencia == "nan":
                     pass
@@ -570,7 +583,8 @@ def cadastrar_item():
 
             digito_agencia = str(row['Digito Agência'])
             digito_agencia = digito_agencia.strip()
-            digito_agencia = remove_ponto_zero(digito_agencia)
+            if '.' in digito_agencia:
+                digito_agencia = remove_ponto_zero(digito_agencia)
             digito_agencia = re.sub(r'[^a-zA-Z0-9]', '', digito_agencia)
             if not digito_agencia or digito_agencia == "nan":
                     pass
@@ -579,7 +593,8 @@ def cadastrar_item():
 
             num_conta = str(row['Conta'])
             num_conta = num_conta.strip()
-            num_conta = remove_ponto_zero(num_conta)
+            if '.' in num_conta:
+                num_conta = remove_ponto_zero(num_conta)
             num_conta = re.sub(r'[^a-zA-Z0-9]', '', num_conta)
             if not num_conta or num_conta == "nan":
                     pass
@@ -588,7 +603,8 @@ def cadastrar_item():
 
             digito_conta = str(row['Digito Conta'])
             digito_conta = digito_conta.strip()
-            digito_conta = remove_ponto_zero(digito_conta)
+            if '.' in digito_conta:
+                digito_conta = remove_ponto_zero(digito_conta)
             digito_conta = re.sub(r'[^a-zA-Z0-9]', '', digito_conta)
             if not digito_conta or digito_conta == "nan":
                     pass
@@ -651,7 +667,8 @@ def cadastrar_item():
                             Select(campo_dependente_parentesco).select_by_visible_text(dependente_parentesco)
 
                         dependente_tipo_dependente = str(row[f'Dependente{i} Tipo Dependente'])
-                        dependente_tipo_dependente = remove_ponto_zero(dependente_tipo_dependente)
+                        if '.' in dependente_tipo_dependente:
+                            dependente_tipo_dependente = remove_ponto_zero(dependente_tipo_dependente)
                         campo_dependente_tipo_dependente.send_keys(dependente_tipo_dependente)
                             
                         dependente_sexo = row[f'Dependente{i} Sexo'].lower()
@@ -692,12 +709,10 @@ def cadastrar_item():
                             time.sleep(1)
 
                     except Exception as e:
-                        # Se ocorrer um erro durante o preenchimento de um dependente, marque como erro e continue com a próxima linha
                         df.at[index, 'Status'] = f"Erro na linha: {index}, {str(e)}"
                         preenchidos_com_sucesso = False
                         break
                 
-                # Se os dependentes foram preenchidos com sucesso, marque o status como "Concluído"
                 if preenchidos_com_sucesso:
                     df.at[index, 'Status'] = "Concluído"
 
