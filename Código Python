@@ -205,38 +205,45 @@ def cadastrar_item():
                 raca = row['Raça']      
                 Select(campo_raca).select_by_visible_text(raca)
 
-            deficiencia = row['Deficiência'].lower()
+            deficiencia = str(row['Deficiência'].lower())
+            
             if deficiencia in ['sim', 's', 'x']:
                 campo_deficiencia_sim.click()
                 time.sleep(1)
 
-                deficiencia_motora = row['Deficiência Motora'].lower()
+                deficiencia_motora = str(row['Deficiência Motora'])
+                deficiencia_motora = deficiencia_motora.lower()
                 if deficiencia_motora in ['sim', 's', 'x']:
                     campo_deficiencia_motora.click()
 
-                deficiencia_visual = row['Deficiência Visual'].lower()
+                deficiencia_visual = str(row['Deficiência Visual'])
+                deficiencia_visual = deficiencia_visual.lower()
                 if deficiencia_visual in ['sim', 's', 'x']:
                     campo_deficiencia_visual.click()
 
-                deficiencia_auditiva = row['Deficiência Auditiva'].lower()
+                deficiencia_auditiva = str(row['Deficiência Auditiva'])
+                deficiencia_auditiva = deficiencia_auditiva.lower()
                 if deficiencia_auditiva in ['sim', 's', 'x']:
                     campo_deficiencia_auditiva.click()
 
-                deficiencia_mental = row['Deficiência Mental'].lower()
+                deficiencia_mental = str(row['Deficiência Mental'])
+                deficiencia_mental = deficiencia_mental.lower()
                 if deficiencia_mental in ['sim', 's', 'x']:
                     campo_deficiencia_mental.click()
 
-                deficiencia_intelectual = row['Deficiência Intelectual'].lower()
+                deficiencia_intelectual = str(row['Deficiência Intelectual'])
+                deficiencia_intelectual = deficiencia_intelectual.lower()
                 if deficiencia_intelectual in ['sim', 's', 'x']:
                     campo_deficiencia_intelectual.click()
 
-                deficiencia_reabilitado = row['Deficiência Reabilitado'].lower()
+                deficiencia_reabilitado = str(row['Deficiência Reabilitado'])
+                deficiencia_reabilitado = deficiencia_reabilitado.lower()
                 if deficiencia_reabilitado in ['sim', 's', 'x']:
                     campo_deficiencia_reabilitado.click()
 
             else:
                 campo_deficiencia_nao.click()
-
+                
             janela_doc_pessoais = driver.find_element(By.XPATH, '//*[@id="Bs_TabSet_0_tabCap_1"]')
             janela_doc_pessoais.click()
             time.sleep(1)
@@ -694,10 +701,14 @@ def cadastrar_item():
                         dependente_ir = row[f'Dependente{i} IR'].lower()
                         if dependente_ir in ['sim', 's', 'x']:
                             campo_dependente_ir.click()
+                        else:
+                            pass
 
                         dependente_pensao = row[f'Dependente{i} Pensão'].lower()
                         if dependente_pensao in ['sim', 's', 'x']:
                             campo_dependente_pensao.click()
+                        else:
+                            pass
 
                         btn_gravar = driver.find_element(By.XPATH, '/html/body/table/tbody/tr[4]/td/table/tbody/tr/td[2]/div/div[2]/form/div/input[2]')
                         btn_gravar.click()
@@ -714,7 +725,7 @@ def cadastrar_item():
                         break
                 
                 if preenchidos_com_sucesso:
-                    df.at[index, 'Status'] = "Concluído"
+                    pass
 
             else: #dependentes.lower() == 'não':
 
